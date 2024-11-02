@@ -1,0 +1,4 @@
+.idea
+.vscode
+obj/*.o
+main.exe
