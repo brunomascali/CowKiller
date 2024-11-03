@@ -9,12 +9,15 @@ class CameraFree
 public:
     CameraFree(glm::vec3 eye, glm::vec3 view, glm::vec3 up, float nearPlane, float farPlane, float fov);
 
-    void moveCamera(glm::vec3 direction, float dt);
-
     glm::mat4 getViewMatrix();
     glm::mat4 getProjectionMatrix();
+    
+    void updateCameraPosition(float dt);
 
+    bool moveForward, moveBackward, moveLeft, moveRight;
 private:
+    void moveCamera(glm::vec3 direction, float dt);
+
     // View matrix
     glm::vec3 eye;
     glm::vec3 view;
@@ -24,6 +27,7 @@ private:
     float nearPlane;
     float farPlane;
     float fov;
+
 };
 
 #endif

@@ -60,22 +60,6 @@ GLuint buildTriangle()
     return VAO;
 }
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    CameraFree *camera = static_cast<CameraFree *>(glfwGetWindowUserPointer(window));
-    if (action == GLFW_PRESS)
-    {
-        if (key == GLFW_KEY_W)
-        {
-            camera->moveCamera(glm::vec3(0.0f, 0.0f, -1.0f), 0.1f);
-        }
-        if (key == GLFW_KEY_S)
-        {
-            camera->moveCamera(glm::vec3(0.0f, 0.0f, 1.0f), 0.1f);
-        }
-    }
-}
-
 int main()
 {
     Window window(600, 600, "Universe");
@@ -88,11 +72,15 @@ int main()
     glfwSetKeyCallback(window.getWindow(), keyCallback);
 
     glUseProgram(shader.getProgramID());
+
     while (window.isOpen())
     {
         window.clear(0.0f, 0.0f, 0.0f, 0.0f);
+        float dt = window.getDeltaTime();
 
         auto m = glm::mat4(1);
+
+        camera.updateCameraPosition(dt);
         glm::mat4 v = camera.getViewMatrix();
         glm::mat4 p = camera.getProjectionMatrix();
         shader.setMat4("model", m);

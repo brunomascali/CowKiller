@@ -5,6 +5,9 @@
 #include <memory>
 #include <glfw3.h>
 
+void ErrorCallback(int error, const char* description);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
 class Window
 {
 public:
@@ -14,9 +17,12 @@ public:
     void swapAndPoll();
 
     GLFWwindow *getWindow() { return window; }
+    float getDeltaTime();
 
 private:
     GLFWwindow *window;
+
+    float lastTime;
 };
 
 #endif
