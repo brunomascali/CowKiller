@@ -134,9 +134,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Downloads\glad (2)\src\glad.c" />
     <ClCompile Include="include\GLM\detail\glm.cpp" />
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\model.cpp" />
