@@ -11,14 +11,16 @@
 #include <GLM/gtx/string_cast.hpp>
 
 CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
-    : position(position), target(target), up(up), nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(45.0f)),
+    : 
+    position(position), target(target), up(up), 
+    nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(45.0f)),
     moveForward(false), moveBackward(false), moveLeft(false), moveRight(false), 
-    moveUp(false), moveDown(false),
+    hasBeenMoved(false), hasBeenRotated(false),
     theta(0.0f), phi(0.0f)
 {
-    this->updateVectors();
-    this->updateView();
-    this->updateProjection();
+    this->updateCameraBasisVectors();
+    this->updateViewMatrix();
+    this->updateProjectionMatrix();
 }
 
 glm::mat4 CameraFree::getViewMatrix()
@@ -26,11 +28,13 @@ glm::mat4 CameraFree::getViewMatrix()
     if (moveForward || moveBackward || moveLeft || moveRight)
     {
         this->moveCamera();
+        this->updateCameraBasisVectors();
+        this->updateViewMatrix();
     }
     if (hasBeenRotated)
     {
-        this->updateVectors();
-        this->updateView();
+        this->updateCameraBasisVectors();
+        this->updateViewMatrix();
     }
     return this->viewMatrix;
 }
@@ -40,7 +44,7 @@ glm::mat4 CameraFree::getProjectionMatrix() const
     return this->projectionMatrix;
 }
 
-void CameraFree::updateVectors()
+void CameraFree::updateCameraBasisVectors()
 {
     float phi_rad = glm::radians(phi);
     float theta_rad = glm::radians(theta);
@@ -55,7 +59,7 @@ void CameraFree::updateVectors()
     this->up = glm::normalize(glm::cross(this->right, this->forward));
 }
 
-void CameraFree::updateView()
+void CameraFree::updateViewMatrix()
 {
     this->viewMatrix = glm::mat4(
         right.x, up.x, forward.x, 0,
@@ -64,7 +68,7 @@ void CameraFree::updateView()
         -glm::dot(right, position), -glm::dot(up, position), -glm::dot(forward, position), 1);
 }
 
-void CameraFree::updateProjection()
+void CameraFree::updateProjectionMatrix()
 {
     float aspect_ratio = 1.8f;
 
@@ -85,7 +89,6 @@ void CameraFree::moveCamera()
     float velocity = 20.0f;
     float dt = *this->dt;
 
-
     if (moveForward) {
         position -= glm::vec3(1.0f, 0.0f, 1.0f) * forward * dt * 20.0f;
     }
@@ -101,7 +104,4 @@ void CameraFree::moveCamera()
     {
         position += glm::vec3(1.0f, 0.0f, 1.0f) * right * dt * 20.0f;
     }
-
-    this->updateVectors();
-    this->updateView();
 }

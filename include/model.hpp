@@ -9,7 +9,8 @@
 class Model {
 public:
     Model(const char* filename);
-    void process_aiNode(const aiScene* scene, const aiNode* node);
+    void createMeshes(const aiScene* scene, const aiNode* node);
+
     void render(ShaderProgram &shader);
 
     void rotateX(float angle) { rotation.x += angle; };
