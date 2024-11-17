@@ -3,6 +3,7 @@
 #include <format>
 #include <vector>
 #include <memory>
+#include <filesystem>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -28,7 +29,7 @@ int main()
     Window window(900, 500, "CowKiller");
     ShaderProgram shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-    auto camera_pos = glm::vec3(40.0f, 4.0f, 60.0f);
+    auto camera_pos = glm::vec3(3.5f, 1.0f, 0.0f);
     auto camera_target = glm::vec3(0.0f, 0.0f, 0.0f);
     auto camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
     CameraFree camera
@@ -39,7 +40,7 @@ int main()
     };
     camera.set_deltatime(delta_time);
 
-    Model dragon("Dragon 2.5_dae.dae");
+    Model dragon("./assets/panda/panda.fbx");
 
     glfwSetWindowUserPointer(window.getWindow(), &camera);
 
@@ -50,7 +51,7 @@ int main()
     while (window.isOpen())
     {
         window.clear();
-        float current_time = glfwGetTime();
+        float current_time = static_cast<float>(glfwGetTime());
         *delta_time = current_time - last_time;
         last_time = current_time;
 

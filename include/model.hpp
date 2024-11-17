@@ -2,14 +2,17 @@
 #define MODEL_HPP
 
 #include <vector>
+#include <filesystem>
 #include <mesh.hpp>
 #include <GLM/mat4x4.hpp>
 #include <shader_program.hpp>
+#include <unordered_map>
+#include <texture.hpp>
 
 class Model {
-public:
-    Model(const char* filename);
-    void createMeshes(const aiScene* scene, const aiNode* node);
+public: 
+    Model(std::filesystem::path modelPath);
+    void createMesh(const aiScene* scene, const aiNode* node);
 
     void render(ShaderProgram &shader);
 
@@ -18,9 +21,12 @@ public:
     void rotateZ(float angle) { rotation.z += angle; };
 
 private:
+    std::string modelName;
     std::vector<Mesh> meshes;
     glm::mat4 model;
     glm::vec3 rotation;
+
+    std::shared_ptr<std::vector<Texture>> textures;
 };
 
 #endif
