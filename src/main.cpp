@@ -40,7 +40,7 @@ int main()
     };
     camera.set_deltatime(delta_time);
 
-    Model dragon("./assets/panda/panda.fbx");
+    Model dragon("./assets/spongebob/spongebob.fbx");
 
     glfwSetWindowUserPointer(window.getWindow(), &camera);
 
@@ -62,7 +62,7 @@ int main()
         shader.setMat4("view", v);
         shader.setMat4("projection", p);
         dragon.render(shader);
-
+        
         window.swapAndPoll();
     }
 

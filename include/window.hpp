@@ -8,6 +8,8 @@
 void ErrorCallback(int error, const char* description);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void cursorCallback(GLFWwindow* window, double x, double y);
+void windowSizeCallback(GLFWwindow* window, int width, int height);
+
 static double lastCursorX = 0.0;
 static double lastCursorY = 0.0;
 

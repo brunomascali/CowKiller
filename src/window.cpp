@@ -9,13 +9,58 @@
 #include <camera.hpp>
 #include <GLM/trigonometric.hpp>
 
-void ErrorCallback(int error, const char *description)
+extern double lastCursorX;
+extern double lastCursorY;
+
+Window::Window(int width, int height, const char *title)
+{
+    if (!glfwInit())
+    {
+        glfwTerminate();
+        throw std::runtime_error("Erro ao inicializar o GLFW");
+    }
+
+    glfwSetErrorCallback(ErrorCallback);
+
+    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    if (window == nullptr)
+    {
+        glfwTerminate();
+        throw std::runtime_error("Erro ao criar janela");
+    }
+
+    glfwMakeContextCurrent(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+    glfwSetCursorPosCallback(window, cursorCallback);
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+
+    lastCursorX = width / 2.0;
+    lastCursorY = height / 2.0;
+}
+
+bool Window::isOpen()
+{
+    return !glfwWindowShouldClose(window);
+}
+
+void Window::clear()
+{
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void Window::swapAndPoll()
+{
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
+void ErrorCallback(int error, const char* description)
 {
     fprintf(stderr, "ERROR: GLFW: %s\n", description);
 }
-
-extern double lastCursorX;
-extern double lastCursorY;
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -65,46 +110,10 @@ void cursorCallback(GLFWwindow* window, double x, double y)
     lastCursorY = y;
 }
 
-Window::Window(int width, int height, const char *title)
+void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-    if (!glfwInit())
-    {
-        glfwTerminate();
-        throw std::runtime_error("Erro ao inicializar o GLFW");
-    }
-
-    glfwSetErrorCallback(ErrorCallback);
-
-    window = glfwCreateWindow(width, height, title, nullptr, nullptr);
-    if (window == nullptr)
-    {
-        glfwTerminate();
-        throw std::runtime_error("Erro ao criar janela");
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
-    glfwSetCursorPosCallback(window, cursorCallback);
-    glfwSetKeyCallback(window, keyCallback);
-
-    lastCursorX = width / 2.0;
-    lastCursorY = height / 2.0;
-}
-
-bool Window::isOpen()
-{
-    return !glfwWindowShouldClose(window);
-}
-
-void Window::clear()
-{
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void Window::swapAndPoll()
-{
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    CameraFree* camera = static_cast<CameraFree*>(glfwGetWindowUserPointer(window));
+    // Acho que não pode usar glViewport
+    glViewport(0, 0, width, height);
+    camera->updateProjectionMatrix();
 }

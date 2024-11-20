@@ -8,7 +8,7 @@
 
 Model::Model(std::filesystem::path modelPath)
 	:
-	model(glm::mat4(1.0f)), rotation(glm::vec3(0.0f)),
+	model(glm::mat4(1.0f)), position(glm::vec3(0.0f)), rotation(glm::vec3(0.0f)),
 	textures(std::make_shared<std::vector<Texture>>())
 {
 	modelName = modelPath.filename().replace_extension("").string();
@@ -42,6 +42,7 @@ void Model::render(ShaderProgram& shader)
 {
 	shader.setMat4("model", model);
 	shader.setVec3("rotation", rotation);
+	shader.setVec3("translation", position);
 	for (auto& mesh : meshes)
 		mesh.render();
 }

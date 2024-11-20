@@ -13,7 +13,7 @@
 CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
     : 
     position(position), target(target), up(up), 
-    nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(45.0f)),
+    nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(30.0f)),
     moveForward(false), moveBackward(false), moveLeft(false), moveRight(false), 
     hasBeenMoved(false), hasBeenRotated(false),
     theta(0.0f), phi(0.0f)
@@ -70,7 +70,9 @@ void CameraFree::updateViewMatrix()
 
 void CameraFree::updateProjectionMatrix()
 {
-    float aspect_ratio = 1.8f;
+    int width, height;
+    glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
+    float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
 
     float top = glm::abs(nearPlane) * glm::tan(fov / 2.0f);
     float bottom = -top;

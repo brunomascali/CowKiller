@@ -11,6 +11,7 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform vec3 translation;
 uniform vec3 rotation;
 
 
@@ -47,5 +48,6 @@ void main()
     texCoord = inTexCoord;
 
     mat4 rot_matrix = rotateX(rotation.x) * rotateY(rotation.y) * rotateZ(rotation.z);
-    gl_Position = projection * view * model * rot_matrix * vec4(inPosition, 1.0f);
+
+    gl_Position = projection * view * model * rot_matrix * vec4(inPosition + translation, 1.0f);
 }
