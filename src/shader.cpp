@@ -7,7 +7,7 @@
 #include <GLM/mat4x4.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 
-#include <shader_program.hpp>
+#include <shader.hpp>
 
 static void checkShaderCompileErrors(GLuint shader, const std::string &type)
 {
@@ -33,7 +33,7 @@ static void checkShaderCompileErrors(GLuint shader, const std::string &type)
     }
 }
 
-ShaderProgram::ShaderProgram(const char *vertexFilename, const char *fragmentFilename)
+Shader::Shader(const char *vertexFilename, const char *fragmentFilename)
 {
     vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -58,7 +58,7 @@ ShaderProgram::ShaderProgram(const char *vertexFilename, const char *fragmentFil
     }
 }
 
-GLuint ShaderProgram::compileShader(const char *fileName, GLuint &shaderID)
+GLuint Shader::compileShader(const char *fileName, GLuint &shaderID)
 {
     std::ifstream file;
     try
@@ -84,25 +84,36 @@ GLuint ShaderProgram::compileShader(const char *fileName, GLuint &shaderID)
     return shaderID;
 }
 
-void ShaderProgram::use() const
+void Shader::use() const
 {
     glUseProgram(this->getProgramID());
 }
 
-void ShaderProgram::setVec3(const char* uniformName, glm::vec3 v) const
+void Shader::reset()
+{
+    glUseProgram(0);
+}
+
+void Shader::setVec3(const char* uniformName, glm::vec3 v) const
 {
     GLint uniform = glGetUniformLocation(this->getProgramID(), uniformName);
     glUniform3fv(uniform, 1, glm::value_ptr(v));
 }
 
-void ShaderProgram::setMat4(const char *uniformName, glm::mat4 &matrix) const
+void Shader::setMat4(const char *uniformName, glm::mat4 &matrix) const
 {
     GLint uniform = glGetUniformLocation(this->getProgramID(), uniformName);
     glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void ShaderProgram::setFloat(const char* uniformName, float value) const
+void Shader::setFloat(const char* uniformName, float value) const
 {
     GLint uniform = glGetUniformLocation(this->getProgramID(), uniformName);
     glUniform1f(uniform, value);
+}
+
+void Shader::setInt(const char* uniformName, int value) const
+{
+    GLint uniform = glGetUniformLocation(this->getProgramID(), uniformName);
+    glUniform1i(uniform, value);
 }

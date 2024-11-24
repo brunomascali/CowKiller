@@ -140,7 +140,9 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\model.cpp" />
-    <ClCompile Include="src\shader_program.cpp" />
+    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\terrain.cpp" />
+    <ClCompile Include="src\terrain_block.cpp" />
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
@@ -615,7 +617,10 @@
     <ClInclude Include="include\GLM\vector_relational.hpp" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\model.hpp" />
-    <ClInclude Include="include\shader_program.hpp" />
+    <ClInclude Include="include\shader.hpp" />
+    <ClInclude Include="include\stb_image.h" />
+    <ClInclude Include="include\terrain.hpp" />
+    <ClInclude Include="include\terrain_block.hpp" />
     <ClInclude Include="include\texture.hpp" />
     <ClInclude Include="include\window.hpp" />
   </ItemGroup>

@@ -7,7 +7,10 @@
 
 class Texture {
 public:
-	Texture(const aiTextureType type, const std::string& modelName, const std::string& textureFilename);
+	// Para criar texturas a partir de um mesh do assimp
+	Texture(const std::string& modelName, const std::string& texturePath);
+	// Criar texturas genéricas
+	explicit Texture(const std::string& texturePath);
 
 	GLuint id;
 	aiTextureType type;

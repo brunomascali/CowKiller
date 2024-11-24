@@ -3,18 +3,21 @@
 
 #include <vector>
 #include <filesystem>
-#include <mesh.hpp>
+
+#include <GLM/vec3.hpp>
 #include <GLM/mat4x4.hpp>
-#include <shader_program.hpp>
-#include <unordered_map>
+
+#include <shader.hpp>
 #include <texture.hpp>
+#include <camera.hpp>
+#include <mesh.hpp>
 
 class Model {
 public: 
     Model(std::filesystem::path modelPath);
     void createMesh(const aiScene* scene, const aiNode* node);
 
-    void render(ShaderProgram &shader);
+    void render(const Shader& shader, CameraFree& camera);
     
     void translate(glm::vec3 t) { position += t; };
     void rotateX(float angle) { rotation.x += angle; };

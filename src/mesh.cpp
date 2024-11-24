@@ -4,7 +4,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <glad/glad.h>
 #include <GLM/vec3.hpp>
 #include <GLM/gtx/rotate_vector.hpp>
 #include <GLM/gtc/type_ptr.hpp>
@@ -53,9 +52,11 @@ Mesh::Mesh(const aiMesh* mesh, const aiMaterial* material, const std::string& mo
 
 	textureDiffuseID = createTexture(aiTextureType_DIFFUSE, material);
 
+	GLuint VBO = 0, indicesBuffer = 0;
+
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &indices_buffer);
+	glGenBuffers(1, &indicesBuffer);
 
 	glBindVertexArray(VAO);
 
@@ -71,7 +72,7 @@ Mesh::Mesh(const aiMesh* mesh, const aiMaterial* material, const std::string& mo
 	glVertexAttribPointer(Location::UVTexture, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<const void*>(sizeof(float) * 6));
 	glEnableVertexAttribArray(Location::UVTexture);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
@@ -90,7 +91,7 @@ GLuint Mesh::createTexture(const aiTextureType textureType, const aiMaterial* ma
 		// Criar a textura caso ela não exista ainda
 		if (texture_ptr == textures->end())
 		{
-			Texture texture(textureType, modelName, textureFilename);
+			Texture texture(modelName, textureFilename);
 			textures->emplace_back(texture);
 			return texture.id;
 		}
@@ -100,9 +101,12 @@ GLuint Mesh::createTexture(const aiTextureType textureType, const aiMaterial* ma
 
 void Mesh::render() const
 {
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureDiffuseID);
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(this->numTriangles), GL_UNSIGNED_INT, nullptr);
+
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(numTriangles), GL_UNSIGNED_INT, nullptr);
+
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }

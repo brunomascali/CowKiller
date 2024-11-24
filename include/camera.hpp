@@ -13,20 +13,19 @@ public:
     glm::mat4 getViewMatrix();
     glm::mat4 getProjectionMatrix() const; 
     
-    void updateCameraBasisVectors();
+    void updateBaseVectors();
     void updateViewMatrix();
     void updateProjectionMatrix();
     void moveCamera();
 
-    void set_deltatime(std::shared_ptr<float> dt) {
+    void shareDeltaTime(std::shared_ptr<float> dt) {
         this->dt = dt;
     }
 
     bool moveForward, moveBackward, moveLeft, moveRight;
     bool hasBeenMoved, hasBeenRotated;
-    float theta;
-    float phi;
-
+    double theta;
+    double phi;
 private:
     glm::vec3 position;
     glm::vec3 target;

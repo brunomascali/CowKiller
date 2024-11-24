@@ -1,4 +1,5 @@
 // Bibliotecas externas
+#include <iostream>
 #include <GLM/glm.hpp>
 #include <GLM/vec3.hpp>
 #include <GLM/mat4x4.hpp>
@@ -6,9 +7,8 @@
 
 // Bibliotecas próprias
 #include <camera.hpp>
-#include <iostream>
-#include <GLM/gtx/string_cast.hpp>
-#include <GLM/gtx/string_cast.hpp>
+
+constexpr float MOVE_VELOCITY = 8.0f;
 
 CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
     : 
@@ -16,9 +16,9 @@ CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
     nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(30.0f)),
     moveForward(false), moveBackward(false), moveLeft(false), moveRight(false), 
     hasBeenMoved(false), hasBeenRotated(false),
-    theta(0.0f), phi(0.0f)
+    theta(0.0), phi(0.0)
 {
-    this->updateCameraBasisVectors();
+    this->updateBaseVectors();
     this->updateViewMatrix();
     this->updateProjectionMatrix();
 }
@@ -28,12 +28,12 @@ glm::mat4 CameraFree::getViewMatrix()
     if (moveForward || moveBackward || moveLeft || moveRight)
     {
         this->moveCamera();
-        this->updateCameraBasisVectors();
+        this->updateBaseVectors();
         this->updateViewMatrix();
     }
     if (hasBeenRotated)
     {
-        this->updateCameraBasisVectors();
+        this->updateBaseVectors();
         this->updateViewMatrix();
     }
     return this->viewMatrix;
@@ -44,24 +44,24 @@ glm::mat4 CameraFree::getProjectionMatrix() const
     return this->projectionMatrix;
 }
 
-void CameraFree::updateCameraBasisVectors()
+void CameraFree::updateBaseVectors()
 {
-    float phi_rad = glm::radians(phi);
-    float theta_rad = glm::radians(theta);
+    float phi_rad = static_cast<float>(glm::radians(phi));
+    float theta_rad = static_cast<float>(glm::radians(theta));
 
-    auto direction = glm::vec3(0.0f);
+    auto direction = glm::vec3(0.0);
     direction.x = cosf(phi_rad) * cosf(theta_rad);
     direction.y = sinf(phi_rad);
     direction.z = cosf(phi_rad) * sinf(theta_rad);
 
-    this->forward = glm::normalize(direction);
-    this->right = glm::normalize(glm::cross(this->forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-    this->up = glm::normalize(glm::cross(this->right, this->forward));
+    forward = glm::normalize(direction);
+    right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+    up = glm::normalize(glm::cross(right, forward));
 }
 
 void CameraFree::updateViewMatrix()
 {
-    this->viewMatrix = glm::mat4(
+    viewMatrix = glm::mat4(
         right.x, up.x, forward.x, 0,
         right.y, up.y, forward.y, 0,
         right.z, up.z, forward.z, 0,
@@ -88,22 +88,14 @@ void CameraFree::updateProjectionMatrix()
 
 void CameraFree::moveCamera()
 {
-    float velocity = 20.0f;
-    float dt = *this->dt;
+    glm::vec3 moveDirection = glm::vec3(0.0f);
+    if (moveForward) moveDirection -= forward;
+    if (moveBackward) moveDirection += forward;
+    if (moveLeft) moveDirection -= right;
+    if (moveRight) moveDirection += right;
 
-    if (moveForward) {
-        position -= glm::vec3(1.0f, 0.0f, 1.0f) * forward * dt * 20.0f;
-    }
-    if (moveBackward)
-    {
-        position += glm::vec3(1.0f, 0.0f, 1.0f) * forward * dt * 20.0f;
-    }
-    if (moveLeft)
-    {
-        position -= glm::vec3(1.0f, 0.0f, 1.0f) * right * dt * 20.0f;
-    }
-    if (moveRight)
-    {
-        position += glm::vec3(1.0f, 0.0f, 1.0f) * right * dt * 20.0f;
-    }
+    // Evita que o jogador voe pelo mapa.
+    moveDirection.y = 0.0f;
+
+    position += moveDirection * MOVE_VELOCITY * *dt;
 }

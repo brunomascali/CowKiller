@@ -47,7 +47,7 @@ bool Window::isOpen()
 
 void Window::clear()
 {
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+    glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -98,11 +98,11 @@ void cursorCallback(GLFWwindow* window, double x, double y)
     double dx = x - lastCursorX;
     double dy = y - lastCursorY;
 
-    float sensivity = 0.05f;
+    double sensivity = 0.05;
     camera->theta -= sensivity * dx;
     camera->phi += sensivity * dy;
 
-    constexpr float maxPhi = 89.0f;
+    constexpr double maxPhi = 89.0f;
     camera->phi = std::clamp(camera->phi, -maxPhi, maxPhi);
     camera->hasBeenRotated = true;
 

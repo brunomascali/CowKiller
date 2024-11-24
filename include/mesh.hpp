@@ -1,16 +1,16 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
+#include <vector>
+#include <memory>
+
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glad/glad.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
 #include <texture.hpp>
-#include <vector>
-#include <memory>
 
 enum Location {
     Position  = 0,
@@ -33,8 +33,6 @@ public:
     void render() const;
 private:
     GLuint VAO;
-    GLuint VBO;
-    GLuint indices_buffer;
     size_t numTriangles;
 
     std::string modelName;
