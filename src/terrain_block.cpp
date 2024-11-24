@@ -8,11 +8,11 @@ TerrainBlock::TerrainBlock(float posX, float posZ, float worldWidth, float world
 
 	// Gera o conjunto de vértices do bloco
 	std::vector<Vertex> vertices;
-	for (int z = 0; z < VertexBlockCount; z++) {
-		for (int x = 0; x < VertexBlockCount; x++) {
+	for (int z = 0; z < BLOCK_VERTICES_SIZE; z++) {
+		for (int x = 0; x < BLOCK_VERTICES_SIZE; x++) {
 			Vertex vertex{};
-			vertex.position.x = posX + vertexSpacing * static_cast<float>(x);
-			vertex.position.z = posZ + vertexSpacing * static_cast<float>(z);
+			vertex.position.x = posX + BLOCK_RESOLUTION * static_cast<float>(x);
+			vertex.position.z = posZ + BLOCK_RESOLUTION * static_cast<float>(z);
 
 			vertex.uv.x = static_cast<float>(vertex.position.x) / worldWidth;
 			vertex.uv.y = static_cast<float>(vertex.position.z) / worldDepth;
@@ -23,12 +23,12 @@ TerrainBlock::TerrainBlock(float posX, float posZ, float worldWidth, float world
 
 	// Indices dos triângulos do terreno
 	std::vector<unsigned int> indices;
-	for (int z = 0; z < VertexBlockCount - 1; ++z) {
-		for (int x = 0; x < VertexBlockCount - 1; ++x) {
-			int topLeft = z * VertexBlockCount + x;
-			int bottomLeft = (z + 1) * VertexBlockCount + x;
-			int topRight = z * VertexBlockCount + (x + 1);
-			int bottomRight = (z + 1) * VertexBlockCount + (x + 1);
+	for (int z = 0; z < BLOCK_VERTICES_SIZE - 1; ++z) {
+		for (int x = 0; x < BLOCK_VERTICES_SIZE - 1; ++x) {
+			int topLeft = z * BLOCK_VERTICES_SIZE + x;
+			int bottomLeft = (z + 1) * BLOCK_VERTICES_SIZE + x;
+			int topRight = z * BLOCK_VERTICES_SIZE + (x + 1);
+			int bottomRight = (z + 1) * BLOCK_VERTICES_SIZE + (x + 1);
 
 			indices.push_back(topLeft);
 			indices.push_back(bottomLeft);

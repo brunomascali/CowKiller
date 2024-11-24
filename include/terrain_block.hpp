@@ -6,8 +6,9 @@
 #include <glad/glad.h>
 
 // Para fazer um bloco NxN é necessário (N+1)² vértices, por isso VertexBlockCount é ímpar
-constexpr uint32_t VertexBlockCount = 5;
-constexpr float vertexSpacing = 0.125f;
+constexpr uint32_t BLOCK_VERTICES_SIZE = 9;
+constexpr float BLOCK_RESOLUTION = 0.125f;
+constexpr float BLOCK_LENGTH = (BLOCK_VERTICES_SIZE - 1) * BLOCK_RESOLUTION;
 
 class TerrainBlock {
 public:

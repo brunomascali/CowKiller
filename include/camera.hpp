@@ -26,8 +26,8 @@ public:
     bool hasBeenMoved, hasBeenRotated;
     double theta;
     double phi;
-private:
     glm::vec3 position;
+private:
     glm::vec3 target;
 
     // View matrix

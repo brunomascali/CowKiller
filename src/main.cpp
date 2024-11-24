@@ -38,7 +38,7 @@ int main()
     shaders[SHADERS::MODEL] = Shader("./shaders/vertex.glsl", "./shaders/fragment.glsl");
     shaders[SHADERS::TERRAIN] = Shader("./shaders/terrain.vs", "./shaders/terrain.fs");
 
-    auto camera_pos = glm::vec3(3.5f, 1.0f, -2.0f);
+    auto camera_pos = glm::vec3(3.5f, 4.0f, -2.0f);
     auto camera_target = glm::vec3(0.0f, 0.0f, 0.0f);
     auto camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
     CameraFree camera
@@ -51,8 +51,8 @@ int main()
     glfwSetWindowUserPointer(window.getWindow(), &camera);
 
     Model dragon("./assets/spongebob/spongebob.fbx");
-    dragon.translate(glm::vec3(10.0f, 2.0f, 10.0f));
-    auto terrain = Terrain(32, 32);
+    dragon.translate(glm::vec3(10.0f, 4.0f, 10.0f));
+    auto terrain = Terrain(64, 64);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

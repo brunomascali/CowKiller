@@ -4,7 +4,7 @@
 #include <GLM/gtc/noise.hpp>
 #include <camera.hpp>
 
-Terrain::Terrain(uint32_t numBlocksX, uint32_t numBlocksZ)
+Terrain::Terrain(uint32_t terrainWidth, uint32_t terrainDepth)
 	: heightmapTexture("./assets/terrain/heightmap.png"),
 	normalsTexture("./assets/terrain/normals.jpeg")
 {
@@ -21,10 +21,12 @@ Terrain::Terrain(uint32_t numBlocksX, uint32_t numBlocksZ)
 		}
 	}
 
-	float blockSideLength = (VertexBlockCount - 1) * vertexSpacing;
-	for (size_t z = 0; z < numBlocksX; z++) {
-		for (size_t x = 0; x < numBlocksZ; x++) {
-			blocks.emplace_back(x * blockSideLength, z * blockSideLength, numBlocksX * blockSideLength, numBlocksZ * blockSideLength);
+	unsigned int numBlocksX = width / terrainWidth;
+	unsigned int numBlocksZ = depth / terrainDepth;
+
+	for (size_t z = 1; z < depth / terrainDepth; z++) {
+		for (size_t x = 1; x < width / terrainWidth; x++) {
+			blocks.emplace_back(x * BLOCK_LENGTH, z * BLOCK_LENGTH, numBlocksX * BLOCK_LENGTH, numBlocksZ * BLOCK_LENGTH);
 		}
 	}
 }
