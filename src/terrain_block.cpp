@@ -1,34 +1,40 @@
 #include <terrain_block.hpp>
 #include <vector>
 #include <mesh.hpp>
+#include <GLM/gtc/noise.hpp>
+#include <terrain.hpp>
 
-TerrainBlock::TerrainBlock(float posX, float posZ, float worldWidth, float worldDepth)
+TerrainBlock::TerrainBlock(float posX, float posZ, float terrainWidth, float terrainDepth)
 {
 	this->blockPosition = glm::vec2(posX, posZ);
 
+	unsigned int blockNumVerticesX = static_cast<unsigned int>(terrainWidth / VERTEX_SPACING) + 1;
+	unsigned int blockNumVerticesZ = static_cast<unsigned int>(terrainDepth / VERTEX_SPACING) + 1;
+
 	// Gera o conjunto de vértices do bloco
 	std::vector<Vertex> vertices;
-	for (int z = 0; z < BLOCK_VERTICES_SIZE; z++) {
-		for (int x = 0; x < BLOCK_VERTICES_SIZE; x++) {
+	for (unsigned int z = 0; z < blockNumVerticesZ; z++) {
+		for (unsigned int x = 0; x < blockNumVerticesX; x++) {
 			Vertex vertex{};
-			vertex.position.x = posX + BLOCK_RESOLUTION * static_cast<float>(x);
-			vertex.position.z = posZ + BLOCK_RESOLUTION * static_cast<float>(z);
+			vertex.position.x = posX + VERTEX_SPACING * static_cast<float>(x);
+			vertex.position.z = posZ + VERTEX_SPACING * static_cast<float>(z);
 
-			vertex.uv.x = static_cast<float>(vertex.position.x) / worldWidth;
-			vertex.uv.y = static_cast<float>(vertex.position.z) / worldDepth;
+			vertex.position.y = glm::perlin(glm::vec2(vertex.position.x, vertex.position.z) * perlinScalingFactor);
+
+			vertex.uv.x = static_cast<float>(vertex.position.x) / terrainWidth;
+			vertex.uv.y = static_cast<float>(vertex.position.z) / terrainDepth;
 
 			vertices.push_back(vertex);
 		}
 	}
-
-	// Indices dos triângulos do terreno
+	
 	std::vector<unsigned int> indices;
-	for (int z = 0; z < BLOCK_VERTICES_SIZE - 1; ++z) {
-		for (int x = 0; x < BLOCK_VERTICES_SIZE - 1; ++x) {
-			int topLeft = z * BLOCK_VERTICES_SIZE + x;
-			int bottomLeft = (z + 1) * BLOCK_VERTICES_SIZE + x;
-			int topRight = z * BLOCK_VERTICES_SIZE + (x + 1);
-			int bottomRight = (z + 1) * BLOCK_VERTICES_SIZE + (x + 1);
+	for (unsigned int z = 0; z < blockNumVerticesZ - 1; z++) {
+		for (unsigned int x = 0; x < blockNumVerticesX - 1; x++) {
+			int topLeft = (z * blockNumVerticesZ) + x;
+			int bottomLeft = ((z + 1) * (blockNumVerticesZ)) + x;
+			int topRight = topLeft + 1;
+			int bottomRight = bottomLeft + 1;
 
 			indices.push_back(topLeft);
 			indices.push_back(bottomLeft);
@@ -37,9 +43,14 @@ TerrainBlock::TerrainBlock(float posX, float posZ, float worldWidth, float world
 			indices.push_back(topLeft);
 			indices.push_back(bottomRight);
 			indices.push_back(topRight);
+
+			glm::vec3 v1 = vertices[topRight].position - vertices[topLeft].position;
+			glm::vec3 v2 = vertices[bottomLeft].position - vertices[topLeft].position;
+			glm::vec3 n1 = glm::normalize(glm::cross(v2, v1));
+			vertices[topLeft].normal = n1;
 		}
 	}
-	this->vertexCount = indices.size();
+	vertexCount = static_cast<GLsizei>(indices.size());
 
 	GLuint VBO = 0, indices_buffer = 0;
 
@@ -72,4 +83,9 @@ void TerrainBlock::render() const
 	glBindVertexArray(this->VAO);
 	glDrawElements(GL_TRIANGLES, this->vertexCount, GL_UNSIGNED_INT, nullptr);
 	glBindVertexArray(0);
+}
+
+bool TerrainBlock::isVisible(CameraFree &camera) const
+{
+	return true;
 }

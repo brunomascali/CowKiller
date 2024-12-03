@@ -1,5 +1,6 @@
 // Bibliotecas externas
 #include <iostream>
+#include <terrain.hpp>
 #include <GLM/glm.hpp>
 #include <GLM/vec3.hpp>
 #include <GLM/mat4x4.hpp>
@@ -7,6 +8,7 @@
 
 // Bibliotecas próprias
 #include <camera.hpp>
+#include <GLM/gtc/noise.hpp>
 
 constexpr float MOVE_VELOCITY = 8.0f;
 
@@ -15,7 +17,7 @@ CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
     position(position), target(target), up(up), 
     nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(30.0f)),
     moveForward(false), moveBackward(false), moveLeft(false), moveRight(false), 
-    hasBeenMoved(false), hasBeenRotated(false),
+    hasBeenMoved(true), hasBeenRotated(true),
     theta(0.0), phi(0.0)
 {
     this->updateBaseVectors();
@@ -96,6 +98,8 @@ void CameraFree::moveCamera()
 
     // Evita que o jogador voe pelo mapa.
     moveDirection.y = 0.0f;
-
+    
     position += moveDirection * MOVE_VELOCITY * *dt;
+
+    position.y = glm::perlin(glm::vec2(position.x, position.z) * perlinScalingFactor) + 2.0f;
 }

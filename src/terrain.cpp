@@ -4,31 +4,21 @@
 #include <GLM/gtc/noise.hpp>
 #include <camera.hpp>
 
-Terrain::Terrain(uint32_t terrainWidth, uint32_t terrainDepth)
-	: heightmapTexture("./assets/terrain/heightmap.png"),
-	normalsTexture("./assets/terrain/normals.jpeg")
+Terrain::Terrain(const float terrainWidth, const float terrainDepth)
 {
-	int width, depth, numChannels;
-	unsigned char* data = stbi_load("./assets/terrain/heightmap.png", &width, &depth, &numChannels, 0);
+	const float blockWidth = static_cast<float>(terrainWidth) / numBlocksX;
+	const float blockDepth = static_cast<float>(terrainDepth) / numBlocksZ;
 
-	height.resize(depth);
-	for (size_t i = 0; i < depth; i++) height[i].resize(width);
-
-	for (size_t z = 0; z < depth; z++) {
-		for (size_t x = 0; x < width; x++) {
-			size_t index = ((static_cast<size_t>(z) * depth) + x) * numChannels;
-			height[z][x] = data[index];
+	for (size_t z = 0; z < numBlocksZ; z++) {
+		for (size_t x = 0; x < numBlocksX; x++) {
+			blocks.emplace_back(x * blockWidth, z * blockDepth, terrainWidth, terrainDepth);
 		}
 	}
+}
 
-	unsigned int numBlocksX = width / terrainWidth;
-	unsigned int numBlocksZ = depth / terrainDepth;
-
-	for (size_t z = 1; z < depth / terrainDepth; z++) {
-		for (size_t x = 1; x < width / terrainWidth; x++) {
-			blocks.emplace_back(x * BLOCK_LENGTH, z * BLOCK_LENGTH, numBlocksX * BLOCK_LENGTH, numBlocksZ * BLOCK_LENGTH);
-		}
-	}
+float Terrain::getHeight(glm::vec2 position)
+{
+	return glm::perlin(position / perlinScalingFactor);
 }
 
 void Terrain::render(Shader& shader, CameraFree& camera) const
@@ -38,26 +28,14 @@ void Terrain::render(Shader& shader, CameraFree& camera) const
 	auto idMat4 = glm::mat4(1.0f);
 	auto idVec3 = glm::vec3(0.0f);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, heightmapTexture.id);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normalsTexture.id);
-
 	shader.use();
 	shader.setMat4("model", idMat4);
 	shader.setMat4("view", v);
 	shader.setMat4("projection", p);
 
-	shader.setInt("heightmap", 0);
-	shader.setInt("normalMap", 1);
 	for (const auto& block : this->blocks)
-		block.render();
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 0);
+		if (block.isVisible(camera))
+			block.render();
 
 	glUseProgram(0);
 }

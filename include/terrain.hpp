@@ -7,16 +7,24 @@
 #include <shader.hpp>
 #include <camera.hpp>
 
+constexpr int numBlocksX = 8;
+constexpr int numBlocksZ = 8;
+constexpr float VERTEX_SPACING = 1.0f / 8.0f;
+constexpr float perlinScalingFactor = 1.0f / 8.0f;
+
 class Terrain {
 public:
-	Terrain(uint32_t numBlocksX, uint32_t numBlocksZ);
+	Terrain(const float terrainWidth, const float terrainDepth);
+
+	float getHeight(glm::vec2 position);
 
 	void render(Shader &shader, CameraFree& camera) const;
 	
-	std::vector<std::vector<float>> height;
+	std::vector<std::vector<float>> heightmap;
 private:
-	Texture heightmapTexture;
-	Texture normalsTexture;
+	float terrainWidth;
+	float terrainDepth;
+
 	std::vector<TerrainBlock> blocks;
 };
 
