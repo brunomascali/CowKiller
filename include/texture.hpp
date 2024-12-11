@@ -12,6 +12,8 @@ public:
 	Texture(const std::string& modelName, const std::string& texturePath);
 	// Criar texturas genéricas
 	explicit Texture(const std::string& texturePath);
+	// Criar textura para skybox
+	Texture(std::vector<std::string> skyboxTextureFiles);
 
 	GLuint id;
 	aiTextureType type;

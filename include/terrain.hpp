@@ -19,11 +19,11 @@ public:
 	float getHeight(glm::vec2 position);
 
 	void render(Shader &shader, CameraFree& camera) const;
-	
-	std::vector<std::vector<float>> heightmap;
 private:
 	float terrainWidth;
 	float terrainDepth;
+
+	Texture texture;
 
 	std::vector<TerrainBlock> blocks;
 };

@@ -4,15 +4,16 @@
 #include <GLM/mat4x4.hpp>
 #include <glad/glad.h>
 
-enum SHADERS {
+enum SHADER {
 	TERRAIN = 0,
-	MODEL = 1
+	MODEL = 1,
+	SKYBOX = 2,
 };
 
 class Shader
 {
 public:
-	Shader() = default;
+	Shader() {};
 	Shader(const char* vertexFilename, const char* fragmentFilename);
 	GLuint compileShader(const char* fileName, GLuint& shaderID);
 	GLuint getProgramID() const { return programID; };
@@ -26,9 +27,9 @@ public:
 	void setInt(const char* uniformName, int value) const;
 
 private:
-	GLuint vertexShaderID;
-	GLuint fragmentShaderID;
-	GLuint programID;
+	GLuint vertexShaderID = 0;
+	GLuint fragmentShaderID = 0;
+	GLuint programID = 0;
 };
 
 #endif

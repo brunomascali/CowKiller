@@ -135,18 +135,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\GLM\detail\glm.cpp" />
+    <ClCompile Include="src\linalg.cpp" />
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\collision.cpp" />
+    <ClCompile Include="src\entity.cpp" />
+    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\skybox.cpp" />
     <ClCompile Include="src\terrain.cpp" />
     <ClCompile Include="src\terrain_block.cpp" />
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\zombie\deer.fbx" />
     <None Include="include\assimp\color4.inl" />
     <None Include="include\assimp\material.inl" />
     <None Include="include\assimp\matrix3x3.inl" />
@@ -371,6 +377,9 @@
     <ClInclude Include="include\assimp\XMLTools.h" />
     <ClInclude Include="include\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="include\camera.hpp" />
+    <ClInclude Include="include\collision.hpp" />
+    <ClInclude Include="include\entity.hpp" />
+    <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\glad\glad.h" />
     <ClInclude Include="include\GLFW\glfw3.h" />
     <ClInclude Include="include\GLFW\glfw3native.h" />
@@ -615,9 +624,12 @@
     <ClInclude Include="include\GLM\vec3.hpp" />
     <ClInclude Include="include\GLM\vec4.hpp" />
     <ClInclude Include="include\GLM\vector_relational.hpp" />
+    <ClInclude Include="include\linalg.hpp" />
     <ClInclude Include="include\mesh.hpp" />
+    <ClInclude Include="include\misc.hpp" />
     <ClInclude Include="include\model.hpp" />
     <ClInclude Include="include\shader.hpp" />
+    <ClInclude Include="include\skybox.hpp" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\terrain.hpp" />
     <ClInclude Include="include\terrain_block.hpp" />

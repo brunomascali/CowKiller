@@ -15,4 +15,5 @@ void main()
     // color = vec4(finalColor, 1.0f);
 
     color = texture(tex, texCoord);
+    color.w = 0.5f;
 } 

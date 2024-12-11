@@ -3,6 +3,8 @@
 in vec2 texCoord;
 in vec3 normal;
 
+uniform sampler2D tex;
+
 out vec4 color;
 
 void main()
@@ -12,9 +14,9 @@ void main()
     vec3 lightPosition = vec3(0.0f, 10.0f, 10.0f);
     float d = dot(normalize(lightPosition), normalize(normal));
 
-    vec3 terrainColor = vec3(0.8f, 0.8f, 0.8f);
+    vec4 terrainColor = texture(tex, texCoord);
 
-    vec3 finalColor = terrainColor * d;
+    vec4 finalColor = terrainColor * d;
 
-    color = vec4(finalColor, 1.0f);
+    color = vec4(finalColor);
 } 

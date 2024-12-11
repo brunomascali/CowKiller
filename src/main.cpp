@@ -22,6 +22,10 @@
 #include <camera.hpp>
 #include <model.hpp>
 #include <terrain.hpp>
+#include <skybox.hpp>
+#include <collision.hpp>
+#include <game.hpp>
+#include <linalg.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -31,46 +35,29 @@
 
 int main()
 {
-    Window window(900, 500, "CowKiller");
-    auto deltaTime = std::make_shared<float>(0.0f);
+	// Isso precisa ser a primeira coisa à ser executa na função main
+	Window window(900, 500, "CowKiller");
 
-    std::vector<Shader> shaders(10);
-    shaders[SHADERS::MODEL] = Shader("./shaders/vertex.glsl", "./shaders/fragment.glsl");
-    shaders[SHADERS::TERRAIN] = Shader("./shaders/terrain.vs", "./shaders/terrain.fs");
+	Game game;
+	glfwSetWindowUserPointer(window.getWindow(), &game);
 
-    auto camera_pos = glm::vec3(2.0f, 8.0f, 2.0f);
-    auto camera_target = glm::vec3(0.0f, 0.0f, 0.0f);
-    auto camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
-    CameraFree camera
-    {
-        camera_pos, 
-        camera_target, 
-        camera_up
-    };
-    camera.shareDeltaTime(deltaTime);
-    glfwSetWindowUserPointer(window.getWindow(), &camera);
+	// Bugada por enquanto
+	// Skybox skybox;
 
-    Model dragon("./assets/spongebob/spongebob.fbx");
-    dragon.translate(glm::vec3(0.0f, 2.0f, 0.0f));
-    auto terrain = Terrain(16.0f, 16.0f);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	while (window.isOpen())
+	{
+		window.clear();
+		game.mainLoop();
+		window.swapAndPoll();
+	}
 
-    while (window.isOpen())
-    {
-        window.clear();
-        updateDT(deltaTime);
+	glfwTerminate();
 
-        dragon.render(shaders[SHADERS::MODEL], camera);
-        terrain.render(shaders[SHADERS::TERRAIN], camera);
-
-        window.swapAndPoll();
-    }
-
-    glfwTerminate();
-
-    return 0;
+	return 0;
 }

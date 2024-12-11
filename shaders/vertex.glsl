@@ -7,47 +7,76 @@ layout (location = 2) in vec2 inTexCoord;
 out vec3 normal;
 out vec2 texCoord;
 
-uniform mat4 model;
+uniform vec3 translation;
+uniform vec3 rotation;
+uniform float scaling;
+
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 translation;
-uniform vec3 rotation;
+mat4 scaleMatrix(float s) {
+    return mat4(
+		s, 0.0f, 0.0f, 0.0f,
+		0.0f, s, 0.0f, 0.0f,
+		0.0f, 0.0f, s, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+    );
+}
 
+mat4 rotationMatrixX(float angle) {
+    float cosTheta = cos(angle);
+    float sinTheta = sin(angle);
 
-mat4 rotateX(float angle) {
     return mat4(
         1.0, 0.0, 0.0, 0.0,
-        0.0, cos(angle), -sin(angle), 0.0,
-        0.0, sin(angle), cos(angle), 0.0,
+        0.0, cosTheta, -sinTheta, 0.0,
+        0.0, sinTheta, cosTheta, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
 }
 
-mat4 rotateY(float angle) {
+mat4 rotationMatrixY(float angle) {
+    float cosTheta = cos(angle);
+    float sinTheta = sin(angle);
+
     return mat4(
-        cos(angle), 0.0, sin(angle), 0.0,
+        cosTheta, 0.0, sinTheta, 0.0,
         0.0, 1.0, 0.0, 0.0,
-        -sin(angle), 0.0, cos(angle), 0.0,
+        -sinTheta, 0.0, cosTheta, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
 }
 
-mat4 rotateZ(float angle) {
+mat4 rotationMatrixZ(float angle) {
+    float cosTheta = cos(angle);
+    float sinTheta = sin(angle);
+
     return mat4(
-        cos(angle), -sin(angle), 0.0, 0.0,
-        sin(angle), cos(angle), 0.0, 0.0,
+        cosTheta, -sinTheta, 0.0, 0.0,
+        sinTheta, cosTheta, 0.0, 0.0,
         0.0, 0.0, 1.0, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
 }
+
+mat4 rotationMatrix(vec3 rotation) {
+    return rotationMatrixX(rotation.x) * rotationMatrixY(rotation.y) * rotationMatrixZ(rotation.z);
+}
+
+mat4 translationMatrix(vec3 translation) {
+	return mat4(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            translation.x, translation.y, translation.z, 1.0
+        );
+}
+
 
 void main()
 {
     normal = inNormal;
     texCoord = inTexCoord;
 
-    mat4 rot_matrix = rotateX(rotation.x) * rotateY(rotation.y) * rotateZ(rotation.z);
-
-    gl_Position = projection * view * model * rot_matrix * vec4(inPosition + translation, 1.0f);
+    gl_Position = projection * view * translationMatrix(translation) * scaleMatrix(scaling) * rotationMatrix(rotation) * vec4(inPosition, 1.0);
 }

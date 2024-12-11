@@ -2,13 +2,15 @@
 #define CAMERA_HPP
 
 #include <memory>
-#include <GLM/vec4.hpp>
+#include <GLM/vec3.hpp>
 #include <GLM/mat4x4.hpp>
+
+constexpr glm::vec3 GLOBAL_UP = glm::vec3(0.0f, 1.0f, 0.0f);
 
 class CameraFree
 {
 public:
-    CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up);
+    CameraFree(glm::vec3 position);
 
     glm::mat4 getViewMatrix();
     glm::mat4 getProjectionMatrix() const; 
@@ -18,7 +20,7 @@ public:
     void updateProjectionMatrix();
     void moveCamera();
 
-    void shareDeltaTime(std::shared_ptr<float> dt) {
+    void bindDeltaTime(std::shared_ptr<float> dt) {
         this->dt = dt;
     }
 
@@ -27,11 +29,9 @@ public:
     double theta;
     double phi;
     glm::vec3 position;
-private:
-    glm::vec3 target;
+    glm::vec3 forward;
 
     // View matrix
-    glm::vec3 forward;
     glm::vec3 right;
     glm::vec3 up;
 
@@ -40,7 +40,6 @@ private:
     float farPlane;
     float fov;
 
-    // Matrices
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
 

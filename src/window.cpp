@@ -8,6 +8,9 @@
 #include <window.hpp>
 #include <camera.hpp>
 #include <GLM/trigonometric.hpp>
+#include <shader.hpp>
+#include <mesh.hpp>
+#include <game.hpp>
 
 extern double lastCursorX;
 extern double lastCursorY;
@@ -35,6 +38,7 @@ Window::Window(int width, int height, const char *title)
     glfwSetCursorPosCallback(window, cursorCallback);
     glfwSetKeyCallback(window, keyCallback);
     glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
     lastCursorX = width / 2.0;
     lastCursorY = height / 2.0;
@@ -64,47 +68,49 @@ void ErrorCallback(int error, const char* description)
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    CameraFree* camera = static_cast<CameraFree*>(glfwGetWindowUserPointer(window));
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
 
     if (action == GLFW_PRESS)
     {
         if (key == GLFW_KEY_W)
-            camera->moveForward = true;
+            game->player.camera.moveForward = true;
         if (key == GLFW_KEY_S)
-            camera->moveBackward = true;
+            game->player.camera.moveBackward = true;
         if (key == GLFW_KEY_A)
-            camera->moveLeft = true;
+            game->player.camera.moveLeft = true;
         if (key == GLFW_KEY_D)
-            camera->moveRight = true;
+            game->player.camera.moveRight = true;
+        if (key == GLFW_KEY_SPACE)
+            game->player.camera.position.y *= -1.0f;
     }
 
     if (action == GLFW_RELEASE)
     {
         if (key == GLFW_KEY_W)
-            camera->moveForward = false;
+            game->player.camera.moveForward = false;
         if (key == GLFW_KEY_S)
-            camera->moveBackward = false;
+            game->player.camera.moveBackward = false;
         if (key == GLFW_KEY_A)
-            camera->moveLeft = false;
+            game->player.camera.moveLeft = false;
         if (key == GLFW_KEY_D)
-            camera->moveRight = false;
+            game->player.camera.moveRight = false;
     }
 }
 
 void cursorCallback(GLFWwindow* window, double x, double y)
 {
-    CameraFree* camera = static_cast<CameraFree*>(glfwGetWindowUserPointer(window));
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
 
     double dx = x - lastCursorX;
     double dy = y - lastCursorY;
 
     double sensivity = 0.05;
-    camera->theta -= sensivity * dx;
-    camera->phi += sensivity * dy;
+    game->player.camera.theta -= sensivity * dx;
+    game->player.camera.phi += sensivity * dy;
 
     constexpr double maxPhi = 89.0f;
-    camera->phi = std::clamp(camera->phi, -maxPhi, maxPhi);
-    camera->hasBeenRotated = true;
+    game->player.camera.phi = std::clamp(game->player.camera.phi, -maxPhi, maxPhi);
+    game->player.camera.hasBeenRotated = true;
 
     lastCursorX = x;
     lastCursorY = y;
@@ -112,8 +118,17 @@ void cursorCallback(GLFWwindow* window, double x, double y)
 
 void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
-    CameraFree* camera = static_cast<CameraFree*>(glfwGetWindowUserPointer(window));
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
     // Acho que não pode usar glViewport
     glViewport(0, 0, width, height);
-    camera->updateProjectionMatrix();
+    game->player.camera.updateProjectionMatrix();
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        game->player.hasShot = true;
+    }
 }

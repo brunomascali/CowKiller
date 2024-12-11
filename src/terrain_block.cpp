@@ -18,11 +18,26 @@ TerrainBlock::TerrainBlock(float posX, float posZ, float terrainWidth, float ter
 			Vertex vertex{};
 			vertex.position.x = posX + VERTEX_SPACING * static_cast<float>(x);
 			vertex.position.z = posZ + VERTEX_SPACING * static_cast<float>(z);
-
-			vertex.position.y = glm::perlin(glm::vec2(vertex.position.x, vertex.position.z) * perlinScalingFactor);
+			//vertex.position.y = glm::perlin(glm::vec2(vertex.position.x, vertex.position.z) * perlinScalingFactor);
+			vertex.position.y = 0.0f;
 
 			vertex.uv.x = static_cast<float>(vertex.position.x) / terrainWidth;
 			vertex.uv.y = static_cast<float>(vertex.position.z) / terrainDepth;
+
+			auto v1 = glm::vec3(
+				vertex.position.x + VERTEX_SPACING,
+				glm::perlin(glm::vec2(vertex.position.x + VERTEX_SPACING / 4.0f, vertex.position.y) * perlinScalingFactor),
+				vertex.position.y
+			);
+
+			auto v2 = glm::vec3(
+				vertex.position.x,
+				glm::perlin(glm::vec2(vertex.position.x, vertex.position.y + VERTEX_SPACING / 4.0f) * perlinScalingFactor),
+				vertex.position.y + VERTEX_SPACING
+			);
+
+			glm::vec3 n1 = glm::normalize(glm::cross(v2, v1));
+			vertex.normal = n1;
 
 			vertices.push_back(vertex);
 		}
@@ -43,11 +58,6 @@ TerrainBlock::TerrainBlock(float posX, float posZ, float terrainWidth, float ter
 			indices.push_back(topLeft);
 			indices.push_back(bottomRight);
 			indices.push_back(topRight);
-
-			glm::vec3 v1 = vertices[topRight].position - vertices[topLeft].position;
-			glm::vec3 v2 = vertices[bottomLeft].position - vertices[topLeft].position;
-			glm::vec3 n1 = glm::normalize(glm::cross(v2, v1));
-			vertices[topLeft].normal = n1;
 		}
 	}
 	vertexCount = static_cast<GLsizei>(indices.size());

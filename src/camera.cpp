@@ -9,12 +9,13 @@
 // Bibliotecas próprias
 #include <camera.hpp>
 #include <GLM/gtc/noise.hpp>
+#include <linalg.hpp>
 
-constexpr float MOVE_VELOCITY = 8.0f;
+constexpr float MOVE_VELOCITY = 2.0f;
 
-CameraFree::CameraFree(glm::vec3 position, glm::vec3 target, glm::vec3 up)
+CameraFree::CameraFree(glm::vec3 position)
     : 
-    position(position), target(target), up(up), 
+    position(position), up(glm::vec3(0.0f, 1.0f, 0.0f)), 
     nearPlane(1.0f), farPlane(100.0f), fov(glm::radians(30.0f)),
     moveForward(false), moveBackward(false), moveLeft(false), moveRight(false), 
     hasBeenMoved(true), hasBeenRotated(true),
@@ -56,9 +57,9 @@ void CameraFree::updateBaseVectors()
     direction.y = sinf(phi_rad);
     direction.z = cosf(phi_rad) * sinf(theta_rad);
 
-    forward = glm::normalize(direction);
-    right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
-    up = glm::normalize(glm::cross(right, forward));
+    forward = Linalg::normalize(direction);
+    right = Linalg::normalize(Linalg::cross(forward, GLOBAL_UP));
+    up = Linalg::normalize(Linalg::cross(right, forward));
 }
 
 void CameraFree::updateViewMatrix()
@@ -67,7 +68,7 @@ void CameraFree::updateViewMatrix()
         right.x, up.x, forward.x, 0,
         right.y, up.y, forward.y, 0,
         right.z, up.z, forward.z, 0,
-        -glm::dot(right, position), -glm::dot(up, position), -glm::dot(forward, position), 1);
+        -Linalg::dot(right, position), -Linalg::dot(up, position), -Linalg::dot(forward, position), 1);
 }
 
 void CameraFree::updateProjectionMatrix()
