@@ -40,6 +40,7 @@ Mesh::Mesh(const aiMesh* mesh, const aiMaterial* material, const std::string& mo
 		}
 	}
 
+	auto baby = mesh->mBones[0]->mWeights[0];
 	std::vector<unsigned int> indices;
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
