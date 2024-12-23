@@ -37,12 +37,22 @@ glm::mat4 Linalg::rotateZ(float angle) {
 	);
 }
 
-glm::mat4 Linalg::scaleMatrix(float s)
+glm::mat4 Linalg::scale(float s)
 {
 	return glm::mat4(
 		s, 0.0f, 0.0f, 0.0f,
 		0.0f, s, 0.0f, 0.0f,
 		0.0f, 0.0f, s, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
+}
+
+glm::mat4 Linalg::scale(glm::vec3 v)
+{
+	return glm::mat4(
+		v.x, 0.0f, 0.0f, 0.0f,
+		0.0f, v.y, 0.0f, 0.0f,
+		0.0f, 0.0f, v.z, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
 }

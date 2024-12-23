@@ -7,7 +7,8 @@ namespace Linalg {
 	glm::mat4 rotateX(float angle);
 	glm::mat4 rotateY(float angle);
 	glm::mat4 rotateZ(float angle);
-	glm::mat4 scaleMatrix(float s);
+	glm::mat4 scale(float s);
+	glm::mat4 scale(glm::vec3 v);
 	glm::mat4 translate(glm::vec3 translation);
 	float dot(glm::vec3 v1, glm::vec3 v2);
 	float length(glm::vec3 v);

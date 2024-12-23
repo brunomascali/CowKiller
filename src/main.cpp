@@ -30,9 +30,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define MISC_IMPLEMENTATION
-#include <misc.hpp>
-
 int main()
 {
 	// Isso precisa ser a primeira coisa à ser executa na função main

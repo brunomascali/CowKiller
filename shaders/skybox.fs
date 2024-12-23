@@ -1,5 +1,6 @@
 #version 330 core
 
+in vec3 test;
 in vec3 texCoord;
 
 uniform samplerCube skybox;

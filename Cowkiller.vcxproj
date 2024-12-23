@@ -73,7 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <SourcePath>$(VC_SourcePath)/src;</SourcePath>
     <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)lib;$(LibraryPath);GLFW\glfw3.lib;assimp\assimp-vc143-mt.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>GLFW\glfw3.lib;assimp\assimp-vc142-mtd.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>GLFW\glfw3.lib;assimp\assimp-vc143-mt.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -136,22 +136,12 @@
   <ItemGroup>
     <ClCompile Include="include\GLM\detail\glm.cpp" />
     <ClCompile Include="src\linalg.cpp" />
-    <ClCompile Include="src\camera.cpp" />
-    <ClCompile Include="src\collision.cpp" />
-    <ClCompile Include="src\entity.cpp" />
-    <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\mesh.cpp" />
-    <ClCompile Include="src\model.cpp" />
-    <ClCompile Include="src\shader.cpp" />
-    <ClCompile Include="src\skybox.cpp" />
-    <ClCompile Include="src\terrain.cpp" />
-    <ClCompile Include="src\terrain_block.cpp" />
-    <ClCompile Include="src\texture.cpp" />
-    <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
     <None Include="assets\zombie\deer.fbx" />
     <None Include="include\assimp\color4.inl" />
     <None Include="include\assimp\material.inl" />
@@ -293,6 +283,12 @@
     <None Include="include\GLM\gtx\vector_angle.inl" />
     <None Include="include\GLM\gtx\vector_query.inl" />
     <None Include="include\GLM\gtx\wrap.inl" />
+    <None Include="shaders\fragment.glsl" />
+    <None Include="shaders\skybox.fs" />
+    <None Include="shaders\skybox.vs" />
+    <None Include="shaders\terrain.fs" />
+    <None Include="shaders\terrain.vs" />
+    <None Include="shaders\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\assimp\aabb.h" />
@@ -626,7 +622,6 @@
     <ClInclude Include="include\GLM\vector_relational.hpp" />
     <ClInclude Include="include\linalg.hpp" />
     <ClInclude Include="include\mesh.hpp" />
-    <ClInclude Include="include\misc.hpp" />
     <ClInclude Include="include\model.hpp" />
     <ClInclude Include="include\shader.hpp" />
     <ClInclude Include="include\skybox.hpp" />

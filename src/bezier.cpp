@@ -28,5 +28,3 @@ glm::vec4 Bezier::getPoint(float t) const {
     float b33 = pow(t, 3);
     return p0 * b03 + b13 * p1 + b23 * p2 + b33 * p3;
 }
-
-
