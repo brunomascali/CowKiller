@@ -34,6 +34,15 @@ public:
 			{ -0.055279, 0.059106, -0.105943 },
 		});
 
+		Model dragonModel("./assets/dragon/dragon.fbx");
+		Texture dragonAmbient("./assets/dragon/dragon.png");
+		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
+		Enemy dragon(dragonModel, grimmHitbox, 10);
+		dragon.scale(0.0005f);
+		dragon.translate({5.0f, 2.0f, 5.0f});
+		enemies.push_back(dragon);
+
+
 		Model grimmModel("./assets/grimm/grimm.fbx");
 		Texture grimmAmbient("./assets/grimm/ambient.png");
 		grimmModel.addTexture(TextureType::AMBIENT, grimmAmbient, 0);
