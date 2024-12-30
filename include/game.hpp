@@ -21,34 +21,9 @@ public:
 		shaders[SHADER::TERRAIN] = Shader("./shaders/terrain.vs", "./shaders/terrain.fs");
 		shaders[SHADER::SKYBOX] = Shader("./shaders/skybox.vs", "./shaders/skybox.fs");
 
-		Hitbox grimmHitbox(std::vector<glm::vec3>
-		{
-			{ -0.055279, -0.059106, 0.065943},
-			{ 0.055279, -0.059106 , 0.065943 },
-			{ 0.055279, 0.059106 , 0.065943 },
-			{ -0.055279, 0.059106 , 0.065943 },
-
-			{ -0.055279, -0.059106, -0.105943 },
-			{ 0.055279, -0.059106, -0.105943 },
-			{ 0.055279, 0.059106, -0.105943 },
-			{ -0.055279, 0.059106, -0.105943 },
-		});
-
-		Model dragonModel("./assets/dragon/dragon.fbx");
-		Texture dragonAmbient("./assets/dragon/dragon.png");
-		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
-		Enemy dragon(dragonModel, grimmHitbox, 10);
-		dragon.scale(0.0005f);
-		dragon.translate({5.0f, 2.0f, 5.0f});
-		enemies.push_back(dragon);
-
-
-		Model grimmModel("./assets/grimm/grimm.fbx");
-		Texture grimmAmbient("./assets/grimm/ambient.png");
-		grimmModel.addTexture(TextureType::AMBIENT, grimmAmbient, 0);
-
 		// Modelo da arma do personagem
 		Model gunModel("./assets/gun/guntest.fbx");
+		gunModel.scaling = 4.0f;
 		Texture gunAmbient("./assets/gun/texture/Plasmagun_a.png");
 		Texture gunRoughness("./assets/gun/texture/Plasmagun_r.png");
 		Texture gunAO("./assets/gun/texture/Plasmagun_ao.png");
@@ -59,20 +34,55 @@ public:
 		gunModel.addTexture(TextureType::EMISSIVE, gunEmissive, 0);
 		models.push_back(gunModel);
 
-		Enemy grimm(grimmModel, grimmHitbox, 10);
+		// Modelo do dragão
+		Model dragonModel("./assets/dragon/dragon.fbx");
+		Texture dragonAmbient("./assets/dragon/dragon.png");
+		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
+		Enemy dragon(dragonModel, 10);
+		dragon.scale(0.0005f);
+		dragon.translate({ 5.0f, 2.0f, 5.0f });
+
+		//Modelo de uma esfera
+		Model sphere("./assets/sphere/sphere.fbx");
+		models.push_back(sphere);
+
+		Hitbox grimmHitbox(std::vector<glm::vec3>{
+			{ -0.055279, -0.059106, 0.065943 },
+			{ 0.055279, -0.059106 , 0.065943 },
+			{ 0.055279, 0.059106 , 0.065943 },
+			{ -0.055279, 0.059106 , 0.065943 },
+
+			{ -0.055279, -0.059106, -0.105943 },
+			{ 0.055279, -0.059106, -0.105943 },
+			{ 0.055279, 0.059106, -0.105943 },
+			{ -0.055279, 0.059106, -0.105943 },
+		});
+
+		Model grimmModel("./assets/grimm/baby.fbx");
+		Texture grimmAmbient("./assets/grimm/ambient.png");
+		grimmModel.addTexture(TextureType::AMBIENT, grimmAmbient, 0);
+
+		Enemy grimm(grimmModel, 10);
+		grimm.collider = grimmHitbox.clone();
 		// Essa ordem precisa ser preservada
 		grimm.rotate(glm::vec3(90.0f, 0.0f, 0.0f));
 		grimm.scale(4.0f);
 		grimm.translate(glm::vec3(5.0f, 1.0f, 5.0f));
 
-		Enemy grimm2(grimmModel, grimmHitbox, 10);
+		Enemy grimm2(grimmModel, 10);
+		grimm2.collider = grimmHitbox.clone();
 		// Essa ordem precisa ser preservada
 		grimm2.rotate(glm::vec3(90.0f, 0.0f, 0.0f));
 		grimm2.scale(4.0f);
 		grimm2.translate(glm::vec3(7.0f, 1.0f, 5.0f));
 
+		// Bezier
+		Bezier grimmBezier({ 0.0f, 2.0f, 0.0f }, { 2.0, 2.0f, 0.0f }, { 2.0f, 2.0f, 2.0f }, { 4.0f, 2.0f, 2.0f }, 4.0);
+		grimm.setBezierCurve(grimmBezier);
+
 		enemies.push_back(grimm);
 		enemies.push_back(grimm2);
+		enemies.push_back(dragon);
 	}
 
 	void updateDeltaTime() {
@@ -81,31 +91,27 @@ public:
 		lastTime = currentTime;
 	}
 
-	void addEnemy(Model model, Hitbox hitbox, char hp) {
-		enemies.emplace_back(model, hitbox, hp);
-	}
-
 	void mainLoop() {
 		updateDeltaTime();
 		player.camera.updateViewMatrix();
 
-		auto playerTarget = Ray(player.camera, 10.0f);
+		const Ray playerTarget(player.camera, 10.0f);
 
-		if (player.hasShot) {
-			std::for_each(enemies.begin(), enemies.end(), [&](Enemy& enemy) {
-				enemy.translate(glm::vec3(0.01, 0.0f, 0.0f));
-				if (enemy.hitbox.testRayCollision(playerTarget)) {
-					std::cout << "BOOM\n";
-				}
-				});
-			player.hasShot = false;
+		for (Enemy& enemy : enemies) {
+			if (enemy.bezier.has_value()) {
+				enemy.setPosition(enemy.bezier.value().getPoint(lastTime));
+			}
+			if (player.hasShot && enemy.collider && enemy.collider->intersectRay(playerTarget)) {
+				std::cout << "Boom\n";
+			}
 		}
-		
-		drawSkybox();
-		drawEnemies();
+
+		// drawSkybox();
 		drawTerrain();
+		drawEnemies();
 		drawModels();
 		drawCrosshair();
+		player.hasShot = false;
 	}
 
 	Shader& getShader(SHADER id) {
@@ -124,19 +130,25 @@ public:
 
 	void drawModels() {
 		for (auto& model : models) {
-			if (model.modelName == "gun")
-				glClear(GL_DEPTH_BUFFER_BIT);
-
 			glm::mat4 v = player.camera.getViewMatrix();
 			glm::mat4 p = player.camera.getProjectionMatrix();
 
 			Shader& shader = getShader(SHADER::MODEL);
+
 			shader.use();
 			shader.setMat4("view", v);
 			shader.setMat4("projection", p);
 
-			shader.setVec3("rotation", glm::vec3(-glm::radians(player.camera.phi + 270.0f), glm::radians(player.camera.theta + 90.0f), glm::radians(0.0f)));
-			shader.setVec3("translation", player.camera.position - 0.25f * player.camera.forward + 0.4f * player.camera.right - 0.45f * player.camera.up);
+			if (model.modelName == "guntest") {
+				glClear(GL_DEPTH_BUFFER_BIT);
+				shader.setVec3("rotation", glm::vec3(-glm::radians(player.camera.phi + 270.0f), glm::radians(player.camera.theta + 90.0f), glm::radians(0.0f)));
+				shader.setVec3("translation", player.camera.position - 0.25f * player.camera.forward + 0.4f * player.camera.right - 0.45f * player.camera.up);
+			}
+			else {
+				shader.setVec3("rotation", model.rotation);
+				shader.setVec3("translation", model.position);
+			}
+			shader.setFloat("scaling", model.scaling);
 
 			shader.setInt("textureFlags", model.textureFlags);
 			shader.setInt("textureAmbient", 0);
@@ -147,13 +159,14 @@ public:
 				mesh.render(shader);
 			}
 
-			shader.reset();
+			shader.unbind();
 		}
 	}
 
 	void drawSkybox() {
 		skybox.render(getShader(SHADER::SKYBOX), player.camera);
 	}
+
 	void initCrosshairVAO() {
 		float crosshairVertices[] = {
 			-0.01f, -0.01f, 0.0f,
@@ -200,7 +213,7 @@ public:
 		glPointSize(3.0f);
 		glDrawArrays(GL_POINTS, 0, 1);
 
-		shader.reset();
+		shader.unbind();
 		glBindVertexArray(0);
 	}
 

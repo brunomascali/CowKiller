@@ -118,7 +118,7 @@ public:
 		shader.setInt("skybox", 0);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		shader.reset();
+		shader.unbind();
 		glBindVertexArray(0);
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LESS);

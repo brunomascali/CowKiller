@@ -13,7 +13,6 @@
 #include <texture.hpp>
 #include <camera.hpp>
 #include <mesh.hpp>
-#include <animation.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -90,12 +89,16 @@ public:
 		for (auto& mesh : meshes)
 			mesh.render(shader);
 
-		shader.reset();
+		shader.unbind();
 	}
 
 	std::string modelName;
 	std::vector<Mesh> meshes;
 	int textureFlags;
+
+	glm::vec3 position;
+	glm::vec3 rotation;
+	float scaling;
 };
 
 #endif

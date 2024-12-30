@@ -79,7 +79,7 @@ public:
 
 	}
 
-	static void reset() {
+	static void unbind() {
 		glUseProgram(0);
 	}
 

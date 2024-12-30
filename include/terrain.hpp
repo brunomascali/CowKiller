@@ -57,7 +57,7 @@ public:
 		for (const auto& block : this->blocks)
 			block.render();
 
-		shader.reset();
+		shader.unbind();
 	}
 private:
 	float terrainWidth;

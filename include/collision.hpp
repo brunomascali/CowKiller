@@ -20,7 +20,7 @@ struct Ray {
 	}
 };
 
-struct Plane {
+class Plane {
 public:
 	glm::vec3 bottomLeft;
 	glm::vec3 bottomRight;
@@ -28,14 +28,14 @@ public:
 	glm::vec3 topRight;
 	glm::vec3 normal;
 
+	Plane() = default;
+
 	Plane(glm::vec3 bl, glm::vec3 br, glm::vec3 tr, glm::vec3 tl) {
 		bottomLeft = bl;
 		bottomRight = br;
 		topRight = tr;
 		topLeft = tl;
 		normal = glm::normalize(glm::cross(br - bl, tl - bl));
-
-		initVAO();
 	}
 
 	void scale(float s, glm::vec3 center) {
@@ -56,9 +56,6 @@ public:
 		bottomRight = glm::vec3(t_inv * glm::vec4(bottomRight, 0.0f));
 		topLeft = glm::vec3(t_inv * glm::vec4(topLeft, 0.0f));
 		topRight = glm::vec3(t_inv * glm::vec4(topRight, 0.0f));
-
-		glDeleteVertexArrays(1, &VAO);
-		initVAO();
 	}
 
 	void translate(glm::vec3& translation) {
@@ -66,9 +63,6 @@ public:
 		bottomRight += translation;
 		topLeft += translation;
 		topRight += translation;
-
-		glDeleteVertexArrays(1, &VAO);
-		initVAO();
 	}
 
 	void rotate(glm::vec3 angles, glm::vec3 center) {
@@ -104,12 +98,9 @@ public:
 		topRight = glm::vec3(t_inv * glm::vec4(topRight, 0.0f));
 
 		normal = Linalg::normalize(Linalg::cross(bottomRight - bottomLeft, topLeft - bottomLeft));
-
-		glDeleteVertexArrays(1, &VAO);
-		initVAO();
 	}
 
-	bool testCollision(Ray ray) const
+	bool intersectRayTest(const Ray& ray) const
 	{
 		float denominator = Linalg::dot(ray.direction, normal);
 		if (std::abs(denominator) < 1e-6) {
@@ -137,68 +128,28 @@ public:
 
 		return false;
 	}
-
-	// PARA DEBUG APENAS
-	GLuint VAO;
-
-	void initVAO() {
-		glm::vec3 vertices[] = {
-			bottomLeft,
-			bottomRight,
-			topRight,
-			topLeft
-		};
-
-		std::vector<unsigned int> indices = {
-			0, 1, 2, 0, 2, 3,
-		};
-
-		GLuint VBO = 0, indiceBuffer = 0;
-
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &indiceBuffer);
-
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indiceBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-		glEnableVertexAttribArray(0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-
-	void render(Shader& shader, CameraFree& camera) const {
-		glBindVertexArray(VAO);
-		shader.use();
-
-		glm::mat4 view = camera.getViewMatrix();
-		glm::mat4 projection = camera.getProjectionMatrix();
-		glm::mat4 id = glm::mat4(1.0f);
-
-		shader.setVec3("translation", glm::vec3(0.0f));
-		shader.setVec3("rotation", glm::vec3(0.0f));
-		shader.setFloat("scaling", 1.0f);
-
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		shader.reset();
-		glBindVertexArray(0);
-	}
 };
 
-
-class Hitbox {
+class Collider {
 public:
+	virtual bool intersect(const Collider& other) const = 0;
+	virtual bool intersectRay(const Ray& ray) const = 0;
+	virtual void translate(glm::vec3 translation) = 0;
+	virtual void rotate(glm::vec3 rotation, glm::vec3 center) = 0;
+	virtual void scale(float scaling, glm::vec3 center) = 0;
+	virtual void render(Shader& shader, CameraFree& camera, glm::vec3 position, glm::vec3 rotation, float scaling) const = 0;
+
+	virtual std::unique_ptr<Collider> clone() const = 0;
+
+	virtual ~Collider() = default;
+};
+
+class Hitbox : public Collider {
+public:
+	std::vector<Plane> planes;
+	GLuint VAO;
+	unsigned int triangleCount;
+
 	Hitbox(std::vector<glm::vec3> points) {
 		Plane a = Plane(points[0], points[1], points[2], points[3]);
 		Plane b = Plane(points[4], points[5], points[6], points[7]);
@@ -213,18 +164,171 @@ public:
 		planes.push_back(d);
 		planes.push_back(e);
 		planes.push_back(f);
+
+		std::vector<unsigned int> indices = {
+			0, 1, 2,
+			2, 3, 0,
+
+			// Back face
+			4, 5, 6,
+			6, 7, 4,
+
+			// Left face
+			0, 4, 7,
+			7, 3, 0,
+
+			// Right face
+			1, 5, 6,
+			6, 2, 1,
+
+			// Top face
+			3, 2, 6,
+			6, 7, 3,
+
+			// Bottom face
+			0, 1, 5,
+			5, 4, 0
+		};
+		triangleCount = indices.size();
+
+		GLuint VBO = 0, indices_buffer = 0;
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(glm::vec3), points.data(), GL_STATIC_DRAW);
+
+		glGenBuffers(1, &indices_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+		glVertexAttribPointer(Position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+		glEnableVertexAttribArray(Position);
+
+		glBindVertexArray(0);
 	}
 
-	bool testRayCollision(Ray ray) const {
+	Hitbox(const Hitbox& other) noexcept {
+		this->planes = other.planes;
+		this->VAO = other.VAO;
+		this->triangleCount = other.triangleCount;
+	}
+
+	Hitbox& operator=(const Hitbox& other) {
+		if (this != &other) {
+			this->planes = other.planes;
+		}
+		return *this;
+	}
+
+	std::unique_ptr<Collider> clone() const override {
+		return std::make_unique<Hitbox>(*this);
+	}
+
+	bool intersect(const Collider& collider) const override {
+		return false;
+	}
+
+	bool intersectRay(const Ray& ray) const override {
 		return std::any_of(planes.begin(), planes.end(), [&](const Plane& plane) {
-			return plane.testCollision(ray);
+			return plane.intersectRayTest(ray);
 			});
 	}
 
-	std::vector<Plane> planes;
+	void translate(glm::vec3 translation) override {
+		for (auto& plane : planes) {
+			plane.bottomLeft += translation;
+			plane.bottomRight += translation;
+			plane.topLeft += translation;
+			plane.topRight += translation;
+		}
+	}
 
-private:
-	GLuint VAO;
+	void rotate(glm::vec3 rotation, glm::vec3 center) override {
+		glm::mat4 translateToOriginMatrix = Linalg::translate(-center);
+		glm::mat4 TranslateToOriginInverseMatrix = Linalg::translate(center);
+
+		for (auto& plane : planes) {
+			plane.bottomLeft = glm::vec3(translateToOriginMatrix * glm::vec4(plane.bottomLeft, 0.0f));
+			plane.bottomRight = glm::vec3(translateToOriginMatrix * glm::vec4(plane.bottomRight, 0.0f));
+			plane.topLeft = glm::vec3(translateToOriginMatrix * glm::vec4(plane.topLeft, 0.0f));
+			plane.topRight = glm::vec3(translateToOriginMatrix * glm::vec4(plane.topRight, 0.0f));
+
+			glm::mat4 rotationMatrixX = glm::mat4(1.0f);
+			glm::mat4 rotationMatrixY = glm::mat4(1.0f);
+			glm::mat4 rotationMatrixZ = glm::mat4(1.0f);
+
+			if (rotation.x != 0)
+				rotationMatrixX = Linalg::rotateX(glm::radians(rotation.x));
+			if (rotation.y != 0)
+				rotationMatrixY = Linalg::rotateY(glm::radians(rotation.y));
+			if (rotation.z != 0)
+				rotationMatrixZ = Linalg::rotateZ(glm::radians(rotation.z));
+
+			glm::mat4 rotationMatrix = rotationMatrixX * rotationMatrixY * rotationMatrixZ;
+
+			plane.bottomLeft = glm::vec3(rotationMatrix * glm::vec4(plane.bottomLeft, 0.0f));
+			plane.bottomRight = glm::vec3(rotationMatrix * glm::vec4(plane.bottomRight, 0.0f));
+			plane.topLeft = glm::vec3(rotationMatrix * glm::vec4(plane.topLeft, 0.0f));
+			plane.topRight = glm::vec3(rotationMatrix * glm::vec4(plane.topRight, 0.0f));
+
+			plane.bottomLeft = glm::vec3(TranslateToOriginInverseMatrix * glm::vec4(plane.bottomLeft, 0.0f));
+			plane.bottomRight = glm::vec3(TranslateToOriginInverseMatrix * glm::vec4(plane.bottomRight, 0.0f));
+			plane.topLeft = glm::vec3(TranslateToOriginInverseMatrix * glm::vec4(plane.topLeft, 0.0f));
+			plane.topRight = glm::vec3(TranslateToOriginInverseMatrix * glm::vec4(plane.topRight, 0.0f));
+
+			plane.normal = Linalg::normalize(Linalg::cross(plane.bottomRight - plane.bottomLeft, plane.topLeft - plane.bottomLeft));
+		}
+	}
+
+	void scale(float scaling, glm::vec3 center) override {
+		for (auto& plane : planes) {
+			glm::mat4 t = Linalg::translate(-center);
+			glm::mat4 t_inv = Linalg::translate(center);
+
+			plane.bottomLeft = glm::vec3(t * glm::vec4(plane.bottomLeft, 0.0f));
+			plane.bottomRight = glm::vec3(t * glm::vec4(plane.bottomRight, 0.0f));
+			plane.topLeft = glm::vec3(t * glm::vec4(plane.topLeft, 0.0f));
+			plane.topRight = glm::vec3(t * glm::vec4(plane.topRight, 0.0f));
+
+			plane.bottomLeft *= scaling;
+			plane.bottomRight *= scaling;
+			plane.topLeft *= scaling;
+			plane.topRight *= scaling;
+
+			plane.bottomLeft = glm::vec3(t_inv * glm::vec4(plane.bottomLeft, 0.0f));
+			plane.bottomRight = glm::vec3(t_inv * glm::vec4(plane.bottomRight, 0.0f));
+			plane.topLeft = glm::vec3(t_inv * glm::vec4(plane.topLeft, 0.0f));
+			plane.topRight = glm::vec3(t_inv * glm::vec4(plane.topRight, 0.0f));
+		}
+	}
+
+	void render(Shader& shader, CameraFree& camera, glm::vec3 position, glm::vec3 rotation, float scaling) const override {
+		glm::mat4 v = camera.getViewMatrix();
+		glm::mat4 p = camera.getProjectionMatrix();
+
+		shader.use();
+		shader.setMat4("view", v);
+		shader.setMat4("projection", p);
+
+		shader.setVec3("translation", position);
+		shader.setVec3("rotation", rotation);
+		shader.setFloat("scaling", scaling);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, triangleCount, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		shader.unbind();
+	}
+};
+
+class Hitsphere : public Collider {
+	Hitsphere(float radius, glm::vec3 position) {
+
+	}
 };
 
 #endif

@@ -38,13 +38,10 @@ int main()
 	Game game;
 	glfwSetWindowUserPointer(window.getWindow(), &game);
 
-	// Bugada por enquanto
-	// Skybox skybox;
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	while (window.isOpen())

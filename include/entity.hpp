@@ -3,8 +3,11 @@
 
 #include <camera.hpp>
 #include <model.hpp>
-#include <collision.hpp>
 #include <GLM/trigonometric.hpp>
+#include <bezier.hpp>
+#include <collision.hpp>
+#include <memory>
+#include <GLM/gtx/string_cast.hpp>
 
 class Player {
 public:
@@ -18,27 +21,59 @@ public:
 class Enemy {
 public:
 	Model model;
-	Hitbox hitbox;
 	char hp;
+	std::unique_ptr<Collider> collider;
+	std::optional<Bezier> bezier;
 
-	glm::vec3 translation;
+	glm::vec3 position;
 	glm::vec3 rotation;
 	float scaling;
 
-	Enemy(Model model, Hitbox hitbox, char hp) : model(model), hitbox(hitbox), hp(hp) {
+	Enemy(Model model, char hp) : model(model), hp(hp), collider(nullptr) {}
+
+	Enemy(const Enemy& other) noexcept
+		: model(std::move(other.model)),
+		hp(other.hp),
+		bezier(other.bezier),
+		position(other.position),
+		rotation(other.rotation),
+		scaling(other.scaling) {
+
+		if (other.collider)
+			this->collider = other.collider->clone();
 	}
-	Enemy(std::string modelPath, std::vector<glm::vec3> hitboxPoints, char hp, glm::vec3 t, glm::vec3 r, float s) : model(model), hitbox(hitbox), hp(hp) {
-		model = Model(modelPath);
-		hitbox = Hitbox(hitboxPoints);
-		translate(t);
-		rotate(r);
-		scale(s);
+
+	Enemy& operator=(Enemy& other) noexcept {
+		if (this != &other) {
+			model = std::move(other.model);
+			hp = other.hp;
+			collider = std::move(other.collider);
+			bezier = std::move(other.bezier);
+			position = other.position;
+			rotation = other.rotation;
+			scaling = other.scaling;
+		}
+		return *this;
+	}
+
+	void setPosition(glm::vec3 newPosition) {
+		glm::vec3 translation = newPosition - position;
+		this->position = newPosition;
+
+		if (collider) {
+			collider->translate(translation);
+		}
+	}
+	
+	void setBezierCurve(Bezier& bezier) {
+		this->bezier = std::optional<Bezier>{bezier};
 	}
 
 	void translate(glm::vec3 t) {
-		translation += t;
-		for (auto& plane : hitbox.planes) {
-			plane.translate(t);
+		position += t;
+
+		if (collider) {
+			collider->translate(t);
 		}
 	}
 
@@ -47,24 +82,22 @@ public:
 		rotation.y += glm::radians(angles.y);
 		rotation.z += glm::radians(angles.z);
 
-		for (auto& plane : hitbox.planes) {
-			plane.rotate(angles, translation);
-		}
+		if (collider)
+			collider->rotate(angles, position);
 	}
 
 	void scale(float s) {
 		scaling = s;
-		for (auto& plane : hitbox.planes) {
-			plane.scale(s, translation);
-		}
+		if (collider)
+			collider->scale(s, position);
 	}
 
 	void render(Shader& shader, CameraFree& camera) {
-		model.render(shader, camera, translation, rotation, scaling);
+		model.render(shader, camera, position, rotation, scaling);
 
-		// Descomentar se precisar ver a hitbox
-		//for (auto& plane : hitbox.planes)
-		//	plane.render(shader, camera);
+		if (collider) {
+			collider->render(shader, camera, position, rotation, scaling);
+		}
 	}
 };
 
