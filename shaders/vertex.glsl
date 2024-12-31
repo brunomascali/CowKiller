@@ -5,9 +5,11 @@ layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec3 inNormal;
 layout (location = 2) in vec2 inTexCoord;
 
-out vec4 position;
+out vec4 position_world;
+out vec4 position_model;
 out vec4 normal;
 out vec2 texCoord;
+out vec3 center;
 
 uniform vec3 translation;
 uniform vec3 rotation;
@@ -81,6 +83,8 @@ void main()
     mat4 model = translateMatrix(translation) * scaleMatrix(scaling) * rotationMatrix(rotation);
 
     gl_Position = projection * view * model * vec4(inPosition, 1.0f);
-    position = model * vec4(inPosition, 1.0f);
+    position_world = model * vec4(inPosition, 1.0f);
+    position_model = vec4(inPosition, 1.0f);
     normal = model * vec4(inNormal, 0.0);
+    center = translation;
 }

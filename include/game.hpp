@@ -8,21 +8,54 @@
 #include <entity.hpp>
 #include <skybox.hpp>
 
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+
 class Game {
 public:
 	Game() : terrain(8.0f, 8.0f) {
 		lastTime = 0.0f;
 		deltaTime = std::make_shared<float>(0.0f);
 		shaders = std::vector<Shader>(3);
-
+		ma_result result = ma_engine_init(NULL, &engine);
+		if (result != MA_SUCCESS) {
+			std::cout << "Erro ao inicializar o motor de áudio...\n";
+		}
+		ma_engine_set_volume(&engine, 0.5);
 		player.camera.bindDeltaTime(deltaTime);
 
 		shaders[SHADER::MODEL] = Shader("./shaders/vertex.glsl", "./shaders/fragment.glsl");
 		shaders[SHADER::TERRAIN] = Shader("./shaders/terrain.vs", "./shaders/terrain.fs");
 		shaders[SHADER::SKYBOX] = Shader("./shaders/skybox.vs", "./shaders/skybox.fs");
 
+
+		// Modelo do dragão
+		Model dragonModel("./assets/dragon/dragon.fbx");
+		Model planetModel("./assets/sphere/planet.fbx");
+		Texture dragonAmbient("./assets/dragon/dragon.png");
+		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
+		Hitsphere h(0.25f, glm::vec3(0.0f));
+		h.numTriangles = planetModel.meshes[0].numTriangles;
+		Enemy dragon(dragonModel, 10);
+		dragon.scale(0.0005f);
+		dragon.collider = h.clone();
+		dragon.translate({ 5.0f, 2.0f, 5.0f });
+
+		Texture planetTexture("./assets/sphere/planet2.jpg");
+		planetModel.addTexture(TextureType::AMBIENT, planetTexture, 0);
+		planetModel.position = glm::vec3(-40.0f, 16.0f, -32.0f);
+		planetModel.scaling = 16.0f;
+		models.push_back(planetModel);
+
+		Model sunModel("./assets/sphere/sun.fbx");
+		Texture sunTexture("./assets/sphere/sun.png");
+		sunModel.addTexture(TextureType::AMBIENT, sunTexture, 0);
+		sunModel.position = glm::vec3(64.0f, 16.0f, 64.0f);
+		sunModel.scaling = 16.0f;
+		models.push_back(sunModel);
+
 		// Modelo da arma do personagem
-		Model gunModel("./assets/gun/guntest.fbx");
+		Model gunModel("./assets/gun/gun.fbx");
 		gunModel.scaling = 4.0f;
 		Texture gunAmbient("./assets/gun/texture/Plasmagun_a.png");
 		Texture gunRoughness("./assets/gun/texture/Plasmagun_r.png");
@@ -33,18 +66,6 @@ public:
 		gunModel.addTexture(TextureType::ROUGHNESS, gunRoughness, 0);
 		gunModel.addTexture(TextureType::EMISSIVE, gunEmissive, 0);
 		models.push_back(gunModel);
-
-		// Modelo do dragão
-		Model dragonModel("./assets/dragon/dragon.fbx");
-		Model sphere("./assets/sphere/mysphere.fbx");
-		Texture dragonAmbient("./assets/dragon/dragon.png");
-		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
-		Hitsphere h(0.25f, glm::vec3(0.0f));
-		h.numTriangles = sphere.meshes[0].numTriangles;
-		Enemy dragon(dragonModel, 10);
-		dragon.scale(0.0005f);
-		dragon.collider = h.clone();
-		dragon.translate({ 5.0f, 2.0f, 5.0f });
 
 		//Modelo de uma esfera
 
@@ -99,6 +120,10 @@ public:
 
 		const Ray playerTarget(player.camera, 10.0f);
 
+		if (player.hasShot) {
+			ma_engine_play_sound(&engine, "./assets/gun/shot.mp3", NULL);
+		}
+
 		for (Enemy& enemy : enemies) {
 			if (enemy.bezier.has_value()) {
 				enemy.setPosition(enemy.bezier.value().getPoint(lastTime));
@@ -108,7 +133,7 @@ public:
 			}
 		}
 
-		// drawSkybox();
+		drawSkybox();
 		drawTerrain();
 		drawModels();
 		drawEnemies();
@@ -140,8 +165,9 @@ public:
 			shader.use();
 			shader.setMat4("view", v);
 			shader.setMat4("projection", p);
+			shader.setInt("currentModel", 0);
 
-			if (model.modelName == "guntest") {
+			if (model.id == GUN_ID) {
 				glClear(GL_DEPTH_BUFFER_BIT);
 				shader.setVec3("rotation", glm::vec3(-glm::radians(player.camera.phi + 270.0f), glm::radians(player.camera.theta + 90.0f), glm::radians(0.0f)));
 				shader.setVec3("translation", player.camera.position - 0.25f * player.camera.forward + 0.4f * player.camera.right - 0.45f * player.camera.up);
@@ -150,8 +176,9 @@ public:
 				shader.setVec3("rotation", model.rotation);
 				shader.setVec3("translation", model.position);
 			}
-			shader.setFloat("scaling", model.scaling);
 
+			shader.setInt("currentModel", model.id);
+			shader.setFloat("scaling", model.scaling);
 			shader.setInt("textureFlags", model.textureFlags);
 			shader.setInt("textureAmbient", 0);
 			shader.setInt("textureNormal", 1);
@@ -224,6 +251,7 @@ public:
 	std::vector<Model> models;
 	Terrain terrain;
 	Skybox skybox;
+	ma_engine engine;
 
 	float lastTime;
 	std::shared_ptr<float> deltaTime;

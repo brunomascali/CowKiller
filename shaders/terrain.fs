@@ -20,7 +20,7 @@ void main()
     vec3 textureColor = texture(floorTexture, texCoord).rgb;
 
     vec3 lightColor = vec3(1.0f);
-    vec3 lightPosition = vec3(4.0f, 16.0f, 32.0f);
+    vec3 lightPosition = vec3(64.0f, 16.0f, 64.0f);
 
     vec3 lightDir = normalize(lightPosition - position);
     vec3 cameraDir = normalize(camera_position.xyz - position);
@@ -36,9 +36,8 @@ void main()
     float roughness = texture(roughnessTexture, texCoord).r;
     float exponent = mix(1.0, 64.0, 1.0 - roughness);
     float specularTerm = pow(max(dot(normal, halfDir), 0.0), exponent);
-    vec3 specular = vec3(0.2) * specularTerm;
+    vec3 specular = vec3(0.05) * specularTerm;
 
     color.rgb = ambient + diffuse + specular;
     color.a = 1.0;
-    // color.rgb = pow(color.rgb, vec3(1.0) / 2.2);
 } 

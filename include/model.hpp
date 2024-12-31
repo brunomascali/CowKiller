@@ -17,10 +17,23 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
+enum MODEL_ID {
+	GRIMM_ID = 1,
+	DRAGON_ID = 2,
+	PLANET_ID = 3,
+	SUN_ID = 4,
+	GUN_ID = 5,
+	UNKNOWN
+};
+
 class Model {
 public:
 	Model(std::filesystem::path modelPath) : position(glm::vec3(0.0f)), rotation(glm::vec3(0.0f)), scaling(1.0f) {
 		modelName = modelPath.filename().replace_extension("").string();
+		if (modelName == "gun") id = GUN_ID;
+		else if (modelName == "grimm") id = GRIMM_ID;
+		else if (modelName == "planet") id = PLANET_ID;
+		else if (modelName == "sun") id = SUN_ID;
 		if (!std::filesystem::exists(modelPath)) {
 			std::cerr << "Error: File not found at " << modelPath << std::endl;
 		}
@@ -92,6 +105,7 @@ public:
 		shader.unbind();
 	}
 
+	MODEL_ID id;
 	std::string modelName;
 	std::vector<Mesh> meshes;
 	int textureFlags;
