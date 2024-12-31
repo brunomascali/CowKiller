@@ -19,7 +19,7 @@
 
 class Model {
 public:
-	Model(std::filesystem::path modelPath) {
+	Model(std::filesystem::path modelPath) : position(glm::vec3(0.0f)), rotation(glm::vec3(0.0f)), scaling(1.0f) {
 		modelName = modelPath.filename().replace_extension("").string();
 		if (!std::filesystem::exists(modelPath)) {
 			std::cerr << "Error: File not found at " << modelPath << std::endl;

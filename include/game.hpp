@@ -36,15 +36,17 @@ public:
 
 		// Modelo do dragão
 		Model dragonModel("./assets/dragon/dragon.fbx");
+		Model sphere("./assets/sphere/mysphere.fbx");
 		Texture dragonAmbient("./assets/dragon/dragon.png");
 		dragonModel.addTexture(TextureType::AMBIENT, dragonAmbient, 0);
+		Hitsphere h(0.25f, glm::vec3(0.0f));
+		h.numTriangles = sphere.meshes[0].numTriangles;
 		Enemy dragon(dragonModel, 10);
 		dragon.scale(0.0005f);
+		dragon.collider = h.clone();
 		dragon.translate({ 5.0f, 2.0f, 5.0f });
 
 		//Modelo de uma esfera
-		Model sphere("./assets/sphere/sphere.fbx");
-		models.push_back(sphere);
 
 		Hitbox grimmHitbox(std::vector<glm::vec3>{
 			{ -0.055279, -0.059106, 0.065943 },
@@ -108,8 +110,8 @@ public:
 
 		// drawSkybox();
 		drawTerrain();
-		drawEnemies();
 		drawModels();
+		drawEnemies();
 		drawCrosshair();
 		player.hasShot = false;
 	}

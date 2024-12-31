@@ -326,9 +326,91 @@ public:
 };
 
 class Hitsphere : public Collider {
-	Hitsphere(float radius, glm::vec3 position) {
+public:
+	float radius;
+	glm::vec3 center;
 
+	Hitsphere(float radius, glm::vec3 position) {
+		this->radius = radius;
+		this->center = position;
 	}
+
+	Hitsphere(const Hitsphere& other) noexcept {
+		this->radius = other.radius;
+		this->center = other.center;
+	}
+
+	Hitsphere& operator=(const Hitsphere& other) {
+		if (this != &other) {
+			this->radius = other.radius;
+			this->center = other.center;
+		}
+		return *this;
+	}
+
+	bool intersect(const Collider& other)const  override { return false; }
+
+	// https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection#:~:text=Calculation%20using%20vectors%20in%203D
+	bool intersectRay(const Ray& ray) const override {
+		// Se o vetor da direção do raio for normalizado temos a = 1
+		float a = 1.0f;
+		float b = 2 * Linalg::dot(ray.direction, ray.origin - center);
+		float c = Linalg::dot(ray.origin - center, ray.origin - center) - radius * radius;
+
+		float discriminant = b * b - 4 * a * c;
+
+		if (discriminant < std::numeric_limits<float>::epsilon()) return false;
+
+		// https://math.stackexchange.com/questions/866331/numerically-stable-algorithm-for-solving-the-quadratic-equation-when-a-is-very
+		float x1 = 2 * c / (-b + sqrtf(discriminant));
+		float x2 = 2 * c / (-b - sqrtf(discriminant));
+
+		glm::vec3 intersectionPoint1 = ray.origin + x1 * ray.direction;
+		glm::vec3 intersectionPoint2 = ray.origin + x2 * ray.direction;
+
+		float dist1 = Linalg::length(intersectionPoint1 - ray.origin);
+		float dist2 = Linalg::length(intersectionPoint2 - ray.origin);
+
+		if (std::min(dist1, dist2) <= ray.range) return true;
+
+		return false;
+	}
+
+	std::unique_ptr<Collider> clone() const {
+		return std::make_unique<Hitsphere>(*this);
+	}
+
+	void translate(glm::vec3 translation) override {
+		center += translation;
+	}
+
+	void rotate(glm::vec3 rotation, glm::vec3 center) override {}
+
+	void scale(float scaling, glm::vec3 center) override {
+		radius *= scaling;
+	}
+
+	void render(Shader& shader, CameraFree& camera, glm::vec3 position, glm::vec3 rotation, float scaling) const override {
+		glm::mat4 v = camera.getViewMatrix();
+		glm::mat4 p = camera.getProjectionMatrix();
+
+		shader.use();
+		shader.setMat4("view", v);
+		shader.setMat4("projection", p);
+
+		shader.setVec3("translation", position);
+		shader.setVec3("rotation", rotation);
+		shader.setFloat("scaling", scaling);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		shader.unbind();
+	}
+
+	GLuint VAO;
+	unsigned int numTriangles;
 };
 
 #endif
